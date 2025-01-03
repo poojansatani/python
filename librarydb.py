@@ -1,24 +1,84 @@
-import mysql.connector
+import psycopg2
+
 db1 = None
+
 def connect():
     global db1
-    db1 = mysql.connector.connect(host="localhost",user="root",
-    password="root"
-  )
+    db1 = psycopg2.connect(
+        host="localhost",
+        user="postgres",
+        password="root",
+        port=5432
+    )
 
 connect()
 c1 = db1.cursor()
-c1.execute("drop database library")
-c1.execute("create database library")
-c1.execute("use library")
-c1.execute("create table users (username varchar(30), passw varchar(30))")
-c1.execute("insert into users values('Anjali','abc123')")
-c1.execute("insert into users values('Rahul','xyz123')")
-c1.execute("insert into users values('Aarav','pqr123')")
+
+# Drop database (if you have sufficient permissions, otherwise skip this step)
+c1.execute("DROP DATABASE IF EXISTS library")
+
+# Create database
+c1.execute("CREATE DATABASE library")
 db1.commit()
-c1.execute("create table member(mid varchar(20) primary key,name varchar(50),email varchar(50), phone varchar(20))")
-c1.execute("create table book(bookid varchar(20) primary key,title varchar(50), author varchar(50), publisher varchar(50), cost integer)")
-c1.execute("create table issue(mid varchar(20), bookid varchar(20), dateofissue date)")
-c1.execute("create table issuelog(mid varchar(20), bookid varchar(20), dateofissue date, dateofreturn date)")
+
+# Reconnect to the newly created database
+db1.close()
+db1 = psycopg2.connect(
+    host="localhost",
+    user="postgres",
+    password="root",
+    port=5432,
+    database="library"
+)
+c1 = db1.cursor()
+
+# Create tables and insert data
+c1.execute("""
+CREATE TABLE users (
+    username VARCHAR(30),
+    passw VARCHAR(30)
+)
+""")
+c1.execute("INSERT INTO users (username, passw) VALUES ('Anjali', 'abc123')")
+c1.execute("INSERT INTO users (username, passw) VALUES ('Rahul', 'xyz123')")
+c1.execute("INSERT INTO users (username, passw) VALUES ('Aarav', 'pqr123')")
+
+c1.execute("""
+CREATE TABLE member (
+    mid VARCHAR(20) PRIMARY KEY,
+    name VARCHAR(50),
+    email VARCHAR(50),
+    phone VARCHAR(20)
+)
+""")
+c1.execute("""
+CREATE TABLE book (
+    bookid VARCHAR(20) PRIMARY KEY,
+    title VARCHAR(50),
+    author VARCHAR(50),
+    publisher VARCHAR(50),
+    cost INTEGER
+)
+""")
+c1.execute("""
+CREATE TABLE issue (
+    mid VARCHAR(20),
+    bookid VARCHAR(20),
+    dateofissue DATE
+)
+""")
+c1.execute("""
+CREATE TABLE issuelog (
+    mid VARCHAR(20),
+    bookid VARCHAR(20),
+    dateofissue DATE,
+    dateofreturn DATE
+)
+""")
 
 db1.commit()
+print("Database and tables created successfully.")
+
+# Close the connection
+c1.close()
+db1.close()
