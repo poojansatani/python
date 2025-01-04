@@ -7,7 +7,7 @@ def connect():
     db1 = psycopg2.connect(
         host="localhost",
         user="postgres",
-        password="root",
+        password="Sps@2512",
         database="library"
     )
 
